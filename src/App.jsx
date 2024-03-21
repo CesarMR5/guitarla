@@ -1,72 +1,9 @@
-import { useState, useEffect } from 'react'
 import Guitar from "./components/Guitar"
 import Header from "./components/Header"
-import { db } from './data/db'
+import { useCart } from './hooks/useCart'
 
 function App() {
-  const initialCart = () => {
-    const localStorageCart = localStorage.getItem('cart')
-
-    return localStorageCart ? JSON.parse(localStorageCart) : []
-  }
-
-  const [data] = useState(db)
-  const [cart, setCart] = useState(initialCart)
-
-  const MAX_ITEMS = 5
-  const MIN_ITEMS = 1
-
-  useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart))
-  }, [cart])
-
-  function addToCart(item) {
-    const itemExist = cart.findIndex(el => el.id === item.id)
-    if (itemExist >= 0) {
-      if(cart[itemExist].quantity >= MAX_ITEMS) return
-
-      const updatedCart = [...cart]
-      updatedCart[itemExist].quantity++
-      setCart(updatedCart)
-    } else {
-      item.quantity = 1
-      setCart([...cart, item])
-    }
-  }
-
-  function removeFromCart(id) {
-    setCart(prevCart => prevCart.filter(el => el.id !== id))
-  }
-
-  function increaseQuantity(id) {
-    const updatedCart = cart.map(el => {
-      if(el.id === id && el.quantity < MAX_ITEMS) {
-        return {
-          ...el,
-          quantity: el.quantity + 1
-        }
-      }
-      return el
-    })
-    setCart(updatedCart)
-  }
-
-  function decreaseQuantity(id) {
-    const updatedCart = cart.map(el => {
-      if(el.id === id && el.quantity > MIN_ITEMS) {
-        return {
-          ...el,
-          quantity: el.quantity - 1
-        }
-      }
-      return el
-    })
-    setCart(updatedCart)
-  }
-
-  function clearCart() {
-    setCart([])
-  }
+  const { data, cart, addToCart, removeFromCart, decreaseQuantity, increaseQuantity, clearCart, isEmpty, cartTotal } = useCart()
 
   return (
     <>
@@ -76,6 +13,8 @@ function App() {
         increaseQuantity={increaseQuantity}
         decreaseQuantity={decreaseQuantity}
         clearCart={clearCart}
+        isEmpty={isEmpty}
+        cartTotal={cartTotal}
       />
       <main className="container-xl mt-5">
           <h2 className="text-center">Nuestra Colección</h2>
@@ -86,7 +25,6 @@ function App() {
                     <Guitar
                       key={guitar.id}
                       guitar={guitar}
-                      setCart={setCart}
                       addToCart={addToCart}
                     />
                 )
